@@ -1,8 +1,8 @@
 const deck = [
-	'AS','KS','QS','JS','10S','9S','8S','7S','6S','5S','4S','3S','2S',
-	'AC','KC','QC','JC','10C','9C','8C','7C','6C','5C','4C','3C','2C',
-	'AH','KH','QH','JH','10H','9H','8H','7H','6H','5H','4H','3H','2H',
-	'AD','KD','QD','JD','10D','9D','8D','7D','6D','5D','4D','3D','2D',
+	'AS','KS','QS','JS','1S','9S','8S','7S','6S','5S','4S','3S','2S',
+	'AC','KC','QC','JC','1C','9C','8C','7C','6C','5C','4C','3C','2C',
+	'AH','KH','QH','JH','1H','9H','8H','7H','6H','5H','4H','3H','2H',
+	'AD','KD','QD','JD','1D','9D','8D','7D','6D','5D','4D','3D','2D',
 ]
 
 let gameDeck = [];
@@ -13,27 +13,28 @@ let players = [
 		cards: [],
 		chips:1000,
 		bet:0,
-		handValue:0,
+		highHand:[],
 	},
 	{
 		name: 'Bubbles',
 		cards: [],
 		chips:1000,
 		bet:0,
-		handValue:0,
+		highHand:[],
 	},
 	{
 		name: 'Sweaty',
 		cards: [],
 		chips:1000,
 		bet:0,
-		handValue:0,
+		highHand:[],
 	},
 ]
 
 let flop = [];
 let turn = [];
 let river = [];
+let communityCards = [];
 //functions
 
 //shuffle
@@ -59,11 +60,11 @@ const shuffle = (array) => {
 const dealCards = () => {
 	shuffle(deck);
 	players.forEach((player) => {
-		player.cards.push(gameDeck.pop())
+		player.cards.push(gameDeck.pop().split(''))
 		console.log(player.cards)
 	})
 	players.forEach((player) => {
-		player.cards.push(gameDeck.pop())
+		player.cards.push(gameDeck.pop().split(''))
 		console.log(player.cards)
 	})
 	console.log(gameDeck.length)
@@ -104,11 +105,53 @@ const handValue = () => {
 	})
 }
 
+const makeCommunityCardArray = () => {
+	flop.forEach( card => {
+		communityCards.push(card)
+	})
+	communityCards.push(turn[0])
+	communityCards.push(river[0])
+	console.log(communityCards)
+}
+
+const addCommunityCardsToPlayerCards = (players, communityCards) => {
+	players.forEach( player => {
+		communityCards.forEach( card => {
+			player.cards.push(card.split(''))
+	})
+	})
+}
+
+const findOfAKindCards = (player) => {
+	console.log(player.cards)
+	player.cards.forEach( currentCard => {
+		player.cards.filter(card => {
+			if(card[0]===currentCard[0] && player.cards.indexOf(card)!=player.cards.indexOf(currentCard)){
+				console.log(card)
+				console.log(currentCard)
+				console.log ('match!')
+				//need to push these cards to highHand array
+			}
+		})
+	})
+}
+
+
+const determineHighHand = () => {
+
+}
+
 dealCards();
 dealFlop();
 dealTurn();
 dealRiver();
 handValue();
+makeCommunityCardArray();
+addCommunityCardsToPlayerCards(players, communityCards);
+
+findOfAKindCards(players[0]);
+
+determineHighHand();
 
 
 //logic notes
