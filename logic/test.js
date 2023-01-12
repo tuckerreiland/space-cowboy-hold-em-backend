@@ -10,7 +10,7 @@ let gameDeck = [];
 let players = [
 	{
 		name: 'Rick Dickless',
-		cards: [],
+		cards: [['K','S'], ['9','C'],  ['A','S'], ['8','D'], ['Q','S'],['J','S'], ['1','S']],
 		chips:1000,
 		bet:0,
 		highHand:[],
@@ -61,33 +61,24 @@ const dealCards = () => {
 	shuffle(deck);
 	players.forEach((player) => {
 		player.cards.push(gameDeck.pop().split(''))
-		console.log(player.cards)
 	})
 	players.forEach((player) => {
 		player.cards.push(gameDeck.pop().split(''))
-		console.log(player.cards)
 	})
-	console.log(gameDeck.length)
 }
 
 const dealFlop = () => {
 	flop.push(gameDeck.pop())
 	flop.push(gameDeck.pop())
 	flop.push(gameDeck.pop())
-	console.log(flop)
-	console.log(gameDeck.length)
 }
 
 const dealTurn = () => {
 	turn.push(gameDeck.pop())
-	console.log(turn)
-	console.log(gameDeck.length)
 }
 
 const dealRiver = () => {
 	river.push(gameDeck.pop())
-	console.log(river)
-	console.log(gameDeck.length)
 }
 
 const handValue = () => {
@@ -111,7 +102,6 @@ const makeCommunityCardArray = () => {
 	})
 	communityCards.push(turn[0])
 	communityCards.push(river[0])
-	console.log(communityCards)
 }
 
 const addCommunityCardsToPlayerCards = (players, communityCards) => {
@@ -122,36 +112,153 @@ const addCommunityCardsToPlayerCards = (players, communityCards) => {
 	})
 }
 
-const findOfAKindCards = (player) => {
+//hand value experimentation functions
+const determineStraight = (player) => {
+	const cardValueRanks = [
+		['A', 13],
+		['K', 12],
+		['Q', 11],
+		['J', 10],
+		['1', 9],
+		['9', 8],
+		['8', 7],
+		['7', 6],
+		['6', 5],
+		['5', 4],
+		['4', 3],
+		['3', 2],
+		['2', 1],
+	]
+	let straight = []
 	console.log(player.cards)
-	player.cards.forEach( currentCard => {
-		player.cards.filter(card => {
-			if(card[0]===currentCard[0] && player.cards.indexOf(card)!=player.cards.indexOf(currentCard)){
-				console.log(card)
-				console.log(currentCard)
-				console.log ('match!')
-				//need to push these cards to highHand array
+	player.cards.forEach( currentCard => { 
+		let faceValue = cardValueRanks.find ( value => value[0]===currentCard[0])
+		player.cards.forEach ( card => {
+			let nextFaceValue = cardValueRanks.find ( value => value[0]===card[0])
+			if (faceValue[1]-1 === nextFaceValue[1] && !straight.includes(currentCard) && straight.length<5){
+				straight.push(currentCard)
+			}
+			if (faceValue[1]+1 === nextFaceValue[1] && !straight.includes(currentCard) && straight.length<5){
+				straight.push(currentCard)
 			}
 		})
 	})
+	console.log(straight)
+	//I need to make it so that it will start on the first element in the array, then it will go to the next element in the array and keep adding on to the straight, as opposed to just finding a number that is less than or greater than any given array value.  If I build the straight off the high card, then I immediately have my high straight ordered from high to low.
+	//Basically, I need to see if the given element, say a king, has a card of immediately lesser value, a queen in this case.
+		//Then, the queen becomes the next element that I'm trying to find an immediately lesser value, or a jack, and so on
+	//But I also need to check to see if there is a higher value.  Meaning that if a player has six cards that result in a straight, it will start the straight from the high card.
 }
 
+const determineFlush = (player) => {
+	console.log(player.cards)
+	let spades = 0;
+	let clubs = 0;
+	let hearts = 0;
+	let diamonds = 0;
+	player.cards.forEach( currentCard => {
+		switch (currentCard[1]) {
+			case 'S': spades++
+			break;
+			case 'C': clubs++
+			break;
+			case 'H': hearts++
+			break;
+			case 'D': diamonds++
+			break;
+		}
+	})
+	if (spades ===5 ){
+		console.log('spades flush')
+	}
+	if (clubs ===5 ){
+		console.log('clubs flush')
+	}
+	if (hearts ===5 ){
+		console.log('hearts flush')
+	}
+	if (diamonds ===5 ){
+		console.log('diamonds flush')
+	}
+}
+
+const determineInKindCards = (player) => {
+	console.log(player.cards)
+	let matches = []
+	player.cards.forEach( currentCard => {
+		player.cards.forEach(card => {
+			if(card[0]===currentCard[0] && player.cards.indexOf(card) != player.cards.indexOf(currentCard)){
+				matches.push(currentCard)
+				// matches.filter((card, index) => index !=matches.indexOf(card))
+			}
+		//I need to figure out how to get it to only send a card to the high hand array once.
+		//I think I may need to take a step back and rethink the architecture of the game and how I do this.
+		//First, I need a way to determine the 'high card' so that will probably mean giving each of the letters/numbers a ranking
+			//this could also be achieved with a local array in a separate function if I want to avoid complicating the deck
+		//The ranking could help me design a system for identifying straights and flushes.  
+			//Really I'm only interested in the suit so long as they have five of the cards, it's the only hand where suit matters
+		//If it's not a straight or a flush then it's a combination of same value cards
+		//then we need to have this work like this:
+			//does player have a flush or straight?
+				//if only flush the that's the high hand
+				//if only straight then that's the high hand
+				//if both are true then straight flush is the high hand
+				//determine high card of high hand
+				//if neither flush nor straight are true then:
+			//does player have matching cards?
+				//if four of a value then four of a kind is high hand
+				//if three of a value then three of a kind is high hand
+				//if two of a value then pair is high hand
+				//if two or more pairs of differnent value then highest two pairs are high hand
+				//if three of a kind and two or more pairs of differnent value then highest three of a kind and highest pair are high hand
+				//in all cases, highest unused card is added to high hand
+				//high card is determined from high hand after high hand value is determined
+			//edge cases
+				//matches that exceed the five playable cards
+					//three pair (choose two highest pair and highest remaining card)
+					//two three of a kind (would be full house with higher three of a kind keepign all three cards)
+				//players have same hand
+					//not possible with straight flush
+					//in this case, player with higher card in the hole wins
+					//only tie is identical full houses
+			
+		})
+	})
+	player.highHand.push(matches)
+	console.log(player)
+}
 
 const determineHighHand = () => {
 
 }
 
-dealCards();
-dealFlop();
-dealTurn();
-dealRiver();
-handValue();
-makeCommunityCardArray();
-addCommunityCardsToPlayerCards(players, communityCards);
+// dealCards();
+// dealFlop();
+// dealTurn();
+// dealRiver();
+// handValue();
+// makeCommunityCardArray();
+// addCommunityCardsToPlayerCards(players, communityCards);
 
-findOfAKindCards(players[0]);
+// determineInKindCards(players[0]);
 
-determineHighHand();
+determineFlush(players[0])
+determineStraight(players[0])
+
+// determineHighHand();
+
+// const filterTest = () => {
+// 	const arrayOne = [1,2,3,4]
+// 	const arrayTwo = [3,4,5,6]
+
+// 	// const result = arrayOne.filter( num => {
+// 	// 	if (num != 2 &! arrayTwo.filter( char => char!=num)){
+// 	// 		return
+// 	// 	}
+// 	// });
+// 	console.log(arrayOne.filter( num => !arrayTwo.includes(num)))
+// }
+// filterTest();
 
 
 //logic notes
@@ -168,6 +275,8 @@ determineHighHand();
 		//straight
 	//if three same number
 		//three of a kind + high card
+	//two pairs
+		//two pairs
 	//if two same number
 		//pair + high card
 	//high card
