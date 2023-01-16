@@ -130,19 +130,77 @@ const determineStraight = (player) => {
 		['2', 1],
 	]
 	let straight = []
-	console.log(player.cards)
-	player.cards.forEach( currentCard => { 
-		let faceValue = cardValueRanks.find ( value => value[0]===currentCard[0])
-		player.cards.forEach ( card => {
-			let nextFaceValue = cardValueRanks.find ( value => value[0]===card[0])
-			if (faceValue[1]-1 === nextFaceValue[1] && !straight.includes(currentCard) && straight.length<5){
-				straight.push(currentCard)
+
+	//helper functions
+	const findFaceValue = (card) => {
+		return cardValueRanks.find ( value => value[0]===card[0])
+	}
+
+	const createStraight = (card, nextCard) => {
+		if(!straight.length){
+			straight.push(card)
+		}
+		if(straight.length && straight.length<5){
+			let lastCardPushed = straight.slice()[0]
+			let faceValue = findFaceValue(lastCardPushed)
+			let nextFaceValue = faceValue[1]-1
+			let nextCardToPush = player.cards.find( nextCard => findFaceValue(nextCard)[1]===nextFaceValue)
+			if (nextCardToPush) {
+				straight.push(nextCardToPush)
 			}
-			if (faceValue[1]+1 === nextFaceValue[1] && !straight.includes(currentCard) && straight.length<5){
-				straight.push(currentCard)
-			}
-		})
-	})
+		}
+		
+		// for ( let i=player.cards.indexOf(card); i<player.cards.length; i++){
+		// 	let currentCard = card
+		// }
+		}
+
+	createStraight(player.cards[0], createStraight)
+
+	// const findNextCard = (card) => {
+	// 	for (let i = 0; i < player.cards.length; i++) {
+	// 		let faceValue = findFaceValue(card)
+	// 		console.log(faceValue)
+	// 		let nextFaceValue = faceValue[1]-1
+	// 		let nextCard = player.cards.find( nextCard => findFaceValue(nextCard)[1]===nextFaceValue)
+	// 		if (nextCard){
+	// 			console.log(nextCard)
+	// 			straight.push(nextCard)
+	// 		}
+	// 		}
+	// 	//return i so that I can push from eaxh element in the array if I can't fill the array with it.
+	// }
+	
+	// const findStraight = () => {
+	// 	if(straight.length===0){
+	// 		straight.push(player.cards[0])
+	// 		console.log(straight.slice())
+	// 		findNextCard(['K', 'S'])
+	// 	}
+		
+	// }
+
+		
+	// for (let i = player.cards.indexOf(currentCard); i < player.cards.length; i++) { 
+	// 	currentCard = player.cards[i]
+	// 	let faceValue = cardValueRanks.find ( value => value[0]===currentCard[0])
+	// 	for (let l = player.cards.indexOf(currentCard)+1; l < player.cards.length; l++) {
+	// 		let card = player.cards[l]
+	// 		let nextFaceValue = cardValueRanks.find ( value => value[0]===card[0])
+	// 		if (faceValue[1]-1 === nextFaceValue[1]){
+	// 			console.log(currentCard)
+	// 			console.log(card)
+	// 			currentCard = card
+	// 			console.log(`new starting card${currentCard}`)
+	// 		}
+	// 	}
+
+		// player.cards.forEach ( card => {
+		// 	let nextFaceValue = cardValueRanks.find ( value => value[0]===card[0])
+		// 	console.log(faceValue)
+		// 	console.log(nextFaceValue)
+		// })
+	// }
 	console.log(straight)
 	//I need to make it so that it will start on the first element in the array, then it will go to the next element in the array and keep adding on to the straight, as opposed to just finding a number that is less than or greater than any given array value.  If I build the straight off the high card, then I immediately have my high straight ordered from high to low.
 	//Basically, I need to see if the given element, say a king, has a card of immediately lesser value, a queen in this case.
